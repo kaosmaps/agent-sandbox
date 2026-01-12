@@ -1,0 +1,57 @@
+# Agent Sandbox Docker Compose
+# Runs Traefik reverse proxy and webhook receiver API
+
+services:
+  traefik:
+    image: traefik:v3.2
+    container_name: sandbox-traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - traefik-certs:/letsencrypt
+    networks:
+      - sandbox-network
+    labels:
+      - "traefik.enable=true"
+      # Dashboard (optional - protected by basic auth in production)
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.sandbox.nanoswarm.kaosmaps.com`)"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: ../../docker/Dockerfile.api
+    container_name: sandbox-api
+    restart: unless-stopped
+    environment:
+      - DEBUG=${DEBUG:-false}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      - GHCR_TOKEN=${GHCR_TOKEN}
+      - SANDBOX_DOMAIN=sandbox.nanoswarm.kaosmaps.com
+      - DOCKER_NETWORK=sandbox-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - sandbox-network
+    labels:
+      - "traefik.enable=true"
+      # API routes - webhook and management
+      - "traefik.http.routers.sandbox-api.rule=Host(`sandbox.nanoswarm.kaosmaps.com`) && (PathPrefix(`/api`) || PathPrefix(`/health`) || PathPrefix(`/ready`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`) || Path(`/`))"
+      - "traefik.http.routers.sandbox-api.entrypoints=websecure"
+      - "traefik.http.routers.sandbox-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sandbox-api.loadbalancer.server.port=8000"
+      - "traefik.http.routers.sandbox-api.priority=100"
+
+networks:
+  sandbox-network:
+    name: sandbox-network
+    driver: bridge
+
+volumes:
+  traefik-certs:

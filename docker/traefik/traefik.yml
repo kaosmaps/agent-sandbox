@@ -1,0 +1,43 @@
+# Traefik Static Configuration for Agent Sandbox
+
+api:
+  dashboard: true
+  insecure: false
+
+log:
+  level: INFO
+  format: json
+
+accessLog:
+  format: json
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: letsencrypt
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: sandbox-network
+    watch: true
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@kaosmaps.com
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: web
