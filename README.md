@@ -9,7 +9,7 @@ Agent Sandbox provides a secure environment where KAI agents can deploy their wo
 ## Architecture
 
 ```
-sandbox.nanoswarm.kaosmaps.com
+api.sandbox.nanoswarm.kaosmaps.com
 ├── /                    → Sandbox API (health, docs, deployments list)
 ├── /api/webhook/deploy  → Deployment trigger endpoint
 ├── /api/deployments     → Deployment management

@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     CONTAINER_PREFIX: str = "sandbox"
 
     # Domain
-    SANDBOX_DOMAIN: str = "sandbox.nanoswarm.kaosmaps.com"
+    SANDBOX_DOMAIN: str = "api.sandbox.nanoswarm.kaosmaps.com"
 
     # CORS
     CORS_ORIGINS: list[str] = [

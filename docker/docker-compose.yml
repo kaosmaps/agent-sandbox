@@ -18,7 +18,7 @@ services:
     labels:
       - "traefik.enable=true"
       # Dashboard (optional - protected by basic auth in production)
-      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.sandbox.nanoswarm.kaosmaps.com`)"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`api.sandbox.nanoswarm.kaosmaps.com`) && PathPrefix(`/traefik`)"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
       - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
@@ -33,7 +33,7 @@ services:
       - DEBUG=${DEBUG:-false}
       - WEBHOOK_SECRET=${WEBHOOK_SECRET}
       - GHCR_TOKEN=${GHCR_TOKEN}
-      - SANDBOX_DOMAIN=sandbox.nanoswarm.kaosmaps.com
+      - SANDBOX_DOMAIN=api.sandbox.nanoswarm.kaosmaps.com
       - DOCKER_NETWORK=sandbox-network
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -42,7 +42,7 @@ services:
     labels:
       - "traefik.enable=true"
       # API routes - webhook and management
-      - "traefik.http.routers.sandbox-api.rule=Host(`sandbox.nanoswarm.kaosmaps.com`) && (PathPrefix(`/api`) || PathPrefix(`/health`) || PathPrefix(`/ready`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`) || Path(`/`))"
+      - "traefik.http.routers.sandbox-api.rule=Host(`api.sandbox.nanoswarm.kaosmaps.com`) && (PathPrefix(`/api`) || PathPrefix(`/health`) || PathPrefix(`/ready`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`) || Path(`/`))"
       - "traefik.http.routers.sandbox-api.entrypoints=websecure"
       - "traefik.http.routers.sandbox-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.sandbox-api.loadbalancer.server.port=8000"

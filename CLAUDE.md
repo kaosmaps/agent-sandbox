@@ -40,7 +40,7 @@ curl -X POST https://api.nanoswarm.kaosmaps.com/api/sandbox/deploy \
 
 Your deployment will be available at:
 ```
-https://sandbox.nanoswarm.kaosmaps.com/${TASK_PREFIX}/
+https://api.sandbox.nanoswarm.kaosmaps.com/${TASK_PREFIX}/
 ```
 
 Include this URL in your task completion report.
@@ -108,7 +108,7 @@ docker run -d \
   --name sandbox-${TASK_PREFIX} \
   --network sandbox-network \
   -l "traefik.enable=true" \
-  -l "traefik.http.routers.sandbox-${TASK_PREFIX}.rule=Host(\`sandbox.nanoswarm.kaosmaps.com\`) && PathPrefix(\`/${TASK_PREFIX}\`)" \
+  -l "traefik.http.routers.sandbox-${TASK_PREFIX}.rule=Host(\`api.sandbox.nanoswarm.kaosmaps.com\`) && PathPrefix(\`/${TASK_PREFIX}\`)" \
   -l "traefik.http.routers.sandbox-${TASK_PREFIX}.entrypoints=websecure" \
   -l "traefik.http.routers.sandbox-${TASK_PREFIX}.tls.certresolver=letsencrypt" \
   -l "traefik.http.services.sandbox-${TASK_PREFIX}.loadbalancer.server.port=3000" \
