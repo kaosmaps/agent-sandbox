@@ -1,0 +1,297 @@
+{
+  "project": "agent-sandbox",
+  "goal": "Close the NanoSwarm execution loop - agents can commit artifacts back",
+  "created": "2026-01-14T16:20:00Z",
+  "features": [
+    {
+      "id": "F001",
+      "priority": 1,
+      "category": "P1: Artifact Loop",
+      "description": "Artifact Storage Service",
+      "files": ["apps/api/src/app/services/storage.py"],
+      "steps": [
+        "Create storage.py with save_artifact(), get_artifact(), list_artifacts()",
+        "Store files at /data/artifacts/{deployment_id}/{filename}",
+        "Track metadata in SQLite (size, hash, created_at)",
+        "Test: save a file, retrieve it, verify hash matches"
+      ],
+      "success_criteria": "curl -X POST /api/artifacts/upload -F file=@test.txt returns artifact_id",
+      "estimated_minutes": 25,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F002",
+      "priority": 1,
+      "category": "P1: Artifact Loop",
+      "description": "Artifact Upload Endpoint",
+      "files": ["apps/api/src/app/api/artifacts.py"],
+      "steps": [
+        "Create POST /api/artifacts/upload accepting multipart file",
+        "Require deployment_id in request",
+        "Call storage.save_artifact()",
+        "Return artifact metadata (id, url, size, hash)"
+      ],
+      "success_criteria": "Upload file, verify stored, verify downloadable",
+      "estimated_minutes": 20,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F003",
+      "priority": 1,
+      "category": "P1: Artifact Loop",
+      "description": "Artifact Download Endpoint",
+      "files": ["apps/api/src/app/api/artifacts.py"],
+      "steps": [
+        "Add GET /api/artifacts/{id} returning file",
+        "Add GET /api/artifacts?deployment_id={id} listing all",
+        "Set proper Content-Type and Content-Disposition",
+        "Handle 404 for missing artifacts"
+      ],
+      "success_criteria": "Download uploaded file, verify contents match",
+      "estimated_minutes": 15,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F004",
+      "priority": 1,
+      "category": "P1: Artifact Loop",
+      "description": "Git Commit Service",
+      "files": ["apps/api/src/app/services/git_artifacts.py"],
+      "steps": [
+        "Create commit_artifacts(deployment_id, repo, branch, message)",
+        "Copy files from container to temp dir",
+        "Git init, add, commit",
+        "Push to branch agent/{deployment_id}",
+        "Return commit SHA"
+      ],
+      "success_criteria": "Artifacts appear as commit in target repo",
+      "estimated_minutes": 35,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F005",
+      "priority": 1,
+      "category": "P1: Artifact Loop",
+      "description": "Git Commit Endpoint",
+      "files": ["apps/api/src/app/api/artifacts.py"],
+      "steps": [
+        "Add POST /api/artifacts/commit with deployment_id, repo, message",
+        "Call git_artifacts.commit_artifacts()",
+        "Return commit URL and SHA",
+        "Optionally create PR if create_pr=true"
+      ],
+      "success_criteria": "curl -X POST /api/artifacts/commit creates visible commit",
+      "estimated_minutes": 20,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F010",
+      "priority": 2,
+      "category": "P2: Observability",
+      "description": "Container Log Streaming",
+      "files": ["apps/api/src/app/api/logs.py"],
+      "steps": [
+        "Create GET /api/deployments/{id}/logs",
+        "Use docker SDK to stream container logs",
+        "Support ?follow=true for SSE streaming",
+        "Include timestamps, handle disconnects gracefully"
+      ],
+      "success_criteria": "curl /api/deployments/xxx/logs?follow=true streams live",
+      "estimated_minutes": 25,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F011",
+      "priority": 2,
+      "category": "P2: Observability",
+      "description": "Deployment Metrics",
+      "files": ["apps/api/src/app/api/metrics.py"],
+      "steps": [
+        "Create GET /api/metrics in Prometheus format",
+        "Track: deployments_total, deployments_active, deployment_errors",
+        "Track per-deployment: cpu_seconds, memory_bytes, duration",
+        "Use prometheus_client library"
+      ],
+      "success_criteria": "Prometheus can scrape /api/metrics",
+      "estimated_minutes": 20,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F012",
+      "priority": 2,
+      "category": "P2: Observability",
+      "description": "Progress WebSocket",
+      "files": ["apps/api/src/app/ws/progress.py"],
+      "steps": [
+        "Create WebSocket endpoint /ws/progress/{deployment_id}",
+        "Send events: started, healthy, log_line, completed, failed",
+        "Broadcast container lifecycle events",
+        "Handle multiple subscribers per deployment"
+      ],
+      "success_criteria": "WebSocket client receives real-time events",
+      "estimated_minutes": 30,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F013",
+      "priority": 2,
+      "category": "P2: Observability",
+      "description": "Enhanced Deployment Status",
+      "files": ["apps/api/src/app/api/deployments.py"],
+      "steps": [
+        "Add health_status, uptime, resource_usage to response",
+        "Add last_health_check timestamp",
+        "Add logs_url, metrics_url links",
+        "Add container state (running/stopped/error)"
+      ],
+      "success_criteria": "GET /api/deployments shows comprehensive status",
+      "estimated_minutes": 15,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F020",
+      "priority": 3,
+      "category": "P3: Infrastructure",
+      "description": "Deployment Lifecycle Hooks",
+      "files": ["apps/api/src/app/services/lifecycle.py"],
+      "steps": [
+        "Create hook system: on_start, on_healthy, on_stop, on_error",
+        "Allow webhook URLs per deployment",
+        "Call hooks at appropriate lifecycle points",
+        "Log all hook invocations"
+      ],
+      "success_criteria": "Webhook receives POST on container lifecycle events",
+      "estimated_minutes": 25,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F021",
+      "priority": 3,
+      "category": "P3: Infrastructure",
+      "description": "Container Resource Limits",
+      "files": ["apps/api/src/app/services/docker.py"],
+      "steps": [
+        "Add memory_limit (default 512MB), cpu_limit (default 0.5)",
+        "Pass to docker.run() as mem_limit, cpu_period, cpu_quota",
+        "Make limits configurable per deployment",
+        "Expose current usage in status"
+      ],
+      "success_criteria": "Container respects limits, OOM doesn't crash host",
+      "estimated_minutes": 20,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F022",
+      "priority": 3,
+      "category": "P3: Infrastructure",
+      "description": "TTL & Auto-Cleanup",
+      "files": ["apps/api/src/app/services/cleanup.py"],
+      "steps": [
+        "Add ttl_minutes field to deployments (default 60)",
+        "Background task runs every 5 minutes",
+        "Stop containers past TTL, remove orphans",
+        "Log all cleanup actions"
+      ],
+      "success_criteria": "Old containers automatically removed",
+      "estimated_minutes": 25,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F023",
+      "priority": 3,
+      "category": "P3: Infrastructure",
+      "description": "Health Check Enhancement",
+      "files": ["apps/api/src/app/services/docker.py"],
+      "steps": [
+        "Configure docker healthcheck per container",
+        "Configurable path, interval, timeout",
+        "Track health history (last 10 checks)",
+        "Expose in deployment status"
+      ],
+      "success_criteria": "Unhealthy containers flagged, logs show history",
+      "estimated_minutes": 15,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F030",
+      "priority": 4,
+      "category": "P4: Templates",
+      "description": "Template Registry API",
+      "files": ["apps/api/src/app/api/templates.py"],
+      "steps": [
+        "Create GET /api/templates listing available templates",
+        "Return: name, description, files, variables",
+        "Create GET /api/templates/{name} with full details",
+        "Read from templates/ directory"
+      ],
+      "success_criteria": "API returns template catalog",
+      "estimated_minutes": 20,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F031",
+      "priority": 4,
+      "category": "P4: Templates",
+      "description": "Template Instantiation",
+      "files": ["apps/api/src/app/api/templates.py"],
+      "steps": [
+        "Add POST /api/templates/{name}/instantiate",
+        "Accept variable substitutions",
+        "Copy template files, apply substitutions",
+        "Return deployment-ready file structure"
+      ],
+      "success_criteria": "Template becomes deployable code",
+      "estimated_minutes": 25,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F032",
+      "priority": 4,
+      "category": "P4: Templates",
+      "description": "FastAPI Template",
+      "files": ["templates/fastapi/Dockerfile", "templates/fastapi/main.py"],
+      "steps": [
+        "Ensure Dockerfile multi-stage build",
+        "Add health endpoint, OpenAPI docs",
+        "Add structured logging (JSON)",
+        "Add .env.example with common vars"
+      ],
+      "success_criteria": "Deploy template, verify health and docs work",
+      "estimated_minutes": 20,
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "F033",
+      "priority": 4,
+      "category": "P4: Templates",
+      "description": "React-Vite Template",
+      "files": ["templates/react-vite/Dockerfile", "templates/react-vite/nginx.conf"],
+      "steps": [
+        "Ensure Dockerfile with nginx",
+        "Add TailwindCSS, TypeScript",
+        "Add nginx.conf for SPA routing",
+        "Add environment variable injection"
+      ],
+      "success_criteria": "Deploy template, verify SPA routing works",
+      "estimated_minutes": 20,
+      "status": "pending",
+      "passes": false
+    }
+  ]
+}

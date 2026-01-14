@@ -36,5 +36,14 @@ class Settings(BaseSettings):
     # GitHub Container Registry
     GHCR_TOKEN: str = ""
 
+    # Artifact Storage
+    ARTIFACTS_DIR: str = "/data/artifacts"
+    ARTIFACTS_DB: str = "/data/artifacts.db"
+
+    # Git Configuration (for artifact commits)
+    GIT_USER_NAME: str = "NanoSwarm Agent"
+    GIT_USER_EMAIL: str = "agent@nanoswarm.kaosmaps.com"
+    GITHUB_TOKEN: str = ""
+
 
 settings = Settings()
