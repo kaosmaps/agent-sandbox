@@ -6,7 +6,8 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import artifacts, deployments, health
+from app.api import artifacts, deployments, health, logs, metrics
+from app.ws import progress
 from app.core.config import settings
 
 structlog.configure(
@@ -58,6 +59,9 @@ app.add_middleware(
 app.include_router(health.router, tags=["health"])
 app.include_router(deployments.router, prefix="/api", tags=["deployments"])
 app.include_router(artifacts.router, prefix="/api", tags=["artifacts"])
+app.include_router(logs.router, prefix="/api", tags=["logs"])
+app.include_router(metrics.router, prefix="/api", tags=["metrics"])
+app.include_router(progress.router, tags=["websocket"])
 
 
 @app.get("/")
