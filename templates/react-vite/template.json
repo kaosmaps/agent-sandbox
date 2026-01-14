@@ -1,0 +1,19 @@
+{
+  "name": "react-vite",
+  "description": "React application with Vite, TypeScript, and TailwindCSS",
+  "port": 80,
+  "variables": [
+    {
+      "name": "PROJECT_NAME",
+      "description": "Name of the project",
+      "default": "sandbox-app",
+      "required": true
+    },
+    {
+      "name": "API_URL",
+      "description": "Backend API URL",
+      "default": "",
+      "required": false
+    }
+  ]
+}
